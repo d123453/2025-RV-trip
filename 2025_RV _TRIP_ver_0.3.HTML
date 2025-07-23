@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RV Trip 2025 - Interactive Itinerary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .content-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .sidebar-link.active {
+            background-color: #10B981; /* emerald-500 */
+            color: white;
+            font-weight: 600;
+        }
+        .reveal-content {
+            transition: all 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .reveal-content.open {
+            max-height: 500px; /* Adjust as needed */
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 1.25rem;
+            bottom: -1.25rem;
+            width: 2px;
+            background-color: #D1D5DB; /* gray-300 */
+        }
+         .timeline-item:last-child::before {
+            display: none;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: calc(1rem - 0.375rem); /* Center the dot on the line */
+            top: 1.25rem;
+            height: 0.875rem;
+            width: 0.875rem;
+            background-color: white;
+            border: 2px solid #10B981; /* emerald-500 */
+            border-radius: 9999px;
+        }
+        /* Modal styles */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+        .modal-backdrop.flex {
+            display: flex;
+        }
+        /* Simple spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #10B981;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .aspect-w-16 { position: relative; padding-bottom: 56.25%; }
+        .aspect-h-9 { height: 0; }
+        .aspect-w-16 > iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="relative min-h-screen lg:flex">
+        <!-- Overlay for mobile -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-white shadow-lg p-6 space-y-4 overflow-y-auto transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-30">
+            <h1 class="text-2xl font-bold text-emerald-600">Summer 2025 RV Trip</h1>
+            <p class="text-sm text-gray-500">Full itinerary and trip guide for our family adventure!</p>
+            <nav id="presentation-nav" class="space-y-2 pt-4">
+                <!-- Navigation links will be dynamically generated here -->
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6 pt-20 md:p-10 lg:ml-72 lg:pt-6">
+            <!-- Hamburger Menu Button -->
+            <button id="hamburger-button" class="lg:hidden fixed top-4 left-4 z-40 bg-white p-2 rounded-md shadow-md" onclick="toggleSidebar()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+
+            <div id="presentation-content">
+
+                <!-- Section 1: Overview -->
+                <section id="overview" class="content-section" data-title="Trip Overview">
+                    <h2 class="text-4xl font-bold mb-4">The Adventure Route</h2>
+                    <p class="text-lg mb-6">Welcome! Here's the planned route for our epic journey through Colorado and Wyoming, hitting some of the most beautiful national parks in the country.</p>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <img src="https://media.cntraveler.com/photos/6185465b62de01ff927a2456/16:9/w_1920,c_limit/Yellowstone_Grand%20Prismatic%20Spring_GettyImages-667781269.jpg" alt="Scenic view of Grand Prismatic Spring in Yellowstone" class="rounded-md w-full object-cover">
+                    </div>
+                </section>
+
+                <!-- Section 2: Day 1 Itinerary -->
+                <section id="day1" class="content-section" data-title="Day 1: Denver & Estes Park">
+                    <h2 class="text-4xl font-bold mb-4">Day 1: Getting the RV and Estes Park</h2>
+                    <p class="text-lg mb-6">We're starting with a super early flight to Denver! Once we're there, we'll grab all our groceries and gear and then get our dream RV. If we move quickly, we're hoping to dive into a lake and explore the beautiful Rocky Mountain National Park (RMNP)!</p>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow mb-8">
+                        <h3 class="text-xl font-semibold mb-2">Day 1 Route</h3>
+                        <img src="https://i.ibb.co/bFj4Yq0/day1-map-route.png" alt="Map of Day 1 route from Denver Airport to Estes Park" class="rounded-md w-full object-cover mb-4">
+                        <a id="day1-map-link" href="#" target="_blank" class="inline-block w-full text-center bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-300">
+                            <i class="fas fa-map-location-dot mr-2"></i>View Interactive Map
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-2xl font-semibold mb-4 border-b pb-2">Timeline for Monday, August 4th</h3>
+                            <div class="relative">
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">2:00 AM - 6:05 AM</p>
+                                    <p>Wake up, drive to EWR, check-in, and board our 6:05 AM flight to Denver (4 hours).</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">8:40 AM - 12:00 PM</p>
+                                    <p>Arrive in Denver, board the family bus, and go shopping (Walmart, King Soopers, Kosher food).</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">12:00 PM</p>
+                                    <p>Leave Walmart on the bus and head to the RV pickup.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">12:30 PM - 2:30 PM</p>
+                                    <p>Pick up the RVs!</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">2:30 PM - 4:40 PM</p>
+                                    <p class="flex items-center space-x-2">
+                                        <span>Drive to <a href="https://bouldercolorado.gov/parks-rec/boulder-reservoir" target="_blank" class="text-blue-600 hover:underline">Boulder Reservoir</a> for a swim.</span>
+                                        <a href="https://waze.com/ul?q=Boulder%20Reservoir&navigate=yes" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a>
+                                    </p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                     <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">4:40 PM - 7:10 PM</p>
+                                    <p>Optional Walmart run, then drive to the campground.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                     <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">7:10 PM onwards</p>
+                                    <p class="flex items-center space-x-2">
+                                        <span>Check-in at <a href="https://www.manorrvpark.com/" target="_blank" class="font-semibold text-blue-600 hover:underline">Manor RV Campground</a>, have dinner, and get some well-deserved sleep.</span>
+                                        <a href="https://waze.com/ul?q=Manor%20RV%20Campground&navigate=yes" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 p-6 rounded-lg shadow">
+                             <h3 class="text-2xl font-semibold mb-4">Key Points</h3>
+                            <ul class="space-y-3 list-disc list-inside">
+                                <li><span class="font-semibold">Advance Team:</span> Netanel, David + 6 reps depart first with all luggage.</li>
+                                <li><span class="font-semibold">Main Group:</span> Arrive at Newark via Uber.</li>
+                                <li><span class="font-semibold">Flight Details:</span> We're on United flight UA480, departing at 6:05 AM. Try to rest on the plane!</li>
+                                <li><span class="font-semibold">RV Pickup:</span> Be efficient! See the RV Pickup Guide for details.</li>
+                                <li><span class="font-semibold">Shopping Crew:</span> Savty, Aliza, Ilana, & Nava buy meat, cheese, and frozen items.</li>
+                                <li><span class="font-semibold">Families:</span> Buy their own specific groceries and equipment.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section Day 2: RMNP Hiking -->
+                <section id="day2" class="content-section" data-title="Day 2: RMNP Hiking">
+                    <h2 class="text-4xl font-bold mb-4">Day 2: Rocky Mountain NP Hiking</h2>
+                    <p class="text-lg mb-6">Get ready for an epic adventure in Rocky Mountain National Park! We're going to hike to three stunning, crystal-clear lakes—Nymph, Dream, and Emerald—see the beautiful Alberta Falls, and explore the serene Sprague Lake. It will be an unforgettable day of breathtaking views and exploration!</p>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow mb-8">
+                        <h3 class="text-xl font-semibold mb-2">Day 2 Route</h3>
+                        <img src="https://i.ibb.co/yQxGZ1K/day2-map.png" alt="Map of Day 2 hiking routes in Rocky Mountain National Park" class="rounded-md w-full object-cover mb-4">
+                        <a id="day2-map-link" href="#" target="_blank" class="inline-block w-full text-center bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-300">
+                            <i class="fas fa-map-location-dot mr-2"></i>View Interactive Map
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-2xl font-semibold mb-4 border-b pb-2">Timeline for Tuesday, August 5th</h3>
+                            <div class="relative">
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">6:30 AM - 7:20 AM</p>
+                                    <p class="flex items-center space-x-2">
+                                        <span>Drive to the <a href="https://www.nps.gov/romo/planyourvisit/park-and-ride.htm" target="_blank" class="text-blue-600 hover:underline">RMNP Park & Ride</a>.</span>
+                                        <a href="https://waze.com/ul?q=Rocky%20Mountain%20National%20Park%20Park%20%26%20Ride&navigate=yes" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a>
+                                    </p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">7:20 AM - 8:20 AM</p>
+                                    <p>Davening, breakfast, and prepare sandwiches.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">8:20 AM - 9:00 AM</p>
+                                    <p>Take the shuttle to the Bear Lake Trailhead.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">9:00 AM - 12:00 PM</p>
+                                    <p>Hike the <a href="https://www.alltrails.com/trail/us/colorado/emerald-lake-trail" target="_blank" class="text-blue-600 hover:underline">Nymph, Dream, and Emerald Lakes Trail</a>.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">12:00 PM - 1:00 PM</p>
+                                    <p>Lunch break at Emerald Lake.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">1:00 PM - 3:00 PM</p>
+                                    <p>Hike to <a href="https://www.alltrails.com/trail/us/colorado/alberta-falls-trail" target="_blank" class="text-blue-600 hover:underline">Alberta Falls</a>.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">3:00 PM - 5:20 PM</p>
+                                    <p>Hike to <a href="https://www.alltrails.com/trail/us/colorado/sprague-lake-trail" target="_blank" class="text-blue-600 hover:underline">Sprague Lake</a>.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">5:20 PM - 5:50 PM</p>
+                                    <p>Take the shuttle back to the RV.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">5:50 PM - 6:30 PM</p>
+                                    <p>Drive back to the campground.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 p-6 rounded-lg shadow">
+                             <h3 class="text-2xl font-semibold mb-4">Key Notes for the Day</h3>
+                            <ul class="space-y-3 list-disc list-inside">
+                                <li>Starting early is key! But only the drivers needs to wake up early.</li>
+                                <li>Prepare for cold weather. Bring layers, a jacket, a raincoat, and maybe a wooly hat.</li>
+                                <li>Even though we plan to return to the RV for lunch, we should pack sandwiches just in case we get delayed on the trails.</li>
+                                <li>Don't forget to wear comfortable hiking shoes.</li>
+                                <li>There's no need to bring swimwear. We are going to many lakes, but swimming is not allowed in any of them.</li>
+                                <li>For most of the day, we will be away from the RV and will get around using the park's shuttles.</li>
+                                <li>Anyone who gets tired can take a shuttle back to the RV to rest until the rest of the group returns.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                        <img src="https://images.alltrails.com/eyJidWNrZXQiOiJhc3NldHMuYWxsdHJhaWxzLmNvbSIsImtleSI6InVwbG9hZHMvcGhvdG8vaW1hZ2UvMzA4MTY1NjEvZDA3ZTFjZTFlN2RhZGNjN2YxMGIxYjQyN2Y3N2VjYWIuanBnIiwiZWRpdHMiOnsidG9Gb3JtYXQiOiJ3ZWJwIiwicmVzaXplIjp7IndpZHRoIjoyMDQ4LCJoZWlnaHQiOjIwNDgsImZpdCI6Imluc2lkZSJ9LCJyb3RhdGUiOm51bGwsImpwZWciOnsidHJlbGxpc1F1YW50aXNhdGlvbiI6dHJ1ZSwib3ZlcnNob290RGVyaW5naW5nIjp0cnVlLCJvcHRpbWlzZVNjYW5zIjp0cnVlLCJxdWFudGlzYXRpb25UYWJsZSI6M319fQ==" alt="Emerald Lake" class="rounded-lg shadow-md object-cover h-48 w-full">
+                        <img src="https://images.alltrails.com/eyJidWNrZXQiOiJhc3NldHMuYWxsdHJhaWxzLmNvbSIsImtleSI6InVwbG9hZHMvcGhvdG8vaW1hZ2UvMjI1OTg0ODkvZTM0ZTE2YmY1ZTY0YjQ0YWM3MDQyY2M4ZTRkNDU2Y2YuanBnIiwiZWRpdHMiOnsidG9Gb3JtYXQiOiJ3ZWJwIiwicmVzaXplIjp7IndpZHRoIjoyMDQ4LCJoZWlnaHQiOjIwNDgsImZpdCI6Imluc2lkZSJ9LCJyb3RhdGUiOm51bGwsImpwZWciOnsidHJlbGxpc1F1YW50aXNhdGlvbiI6dHJ1ZSwib3ZlcnNob290RGVyaW5naW5nIjp0cnVlLCJvcHRpbWlzZVNjYW5zIjp0cnVlLCJxdWFudGlzYXRpb25UYWJsZSI6M319fQ==" alt="Alberta Falls" class="rounded-lg shadow-md object-cover h-48 w-full">
+                        <img src="https://images.alltrails.com/eyJidWNrZXQiOiJhc3NldHMuYWxsdHJhaWxzLmNvbSIsImtleSI6InVwbG9hZHMvcGhvdG8vaW1hZ2UvNTAyODg1ODgvYTQ5MGU0NWIzN2IxZDJmZjdmMmViOTYwODE3NDIxNjIuanBnIiwiZWRpdHMiOnsidG9Gb3JtYXQiOiJ3ZWJwIiwicmVzaXplIjp7IndpZHRoIjoyMDQ4LCJoZWlnaHQiOjIwNDgsImZpdCI6Imluc2lkZSJ9LCJyb3RhdGUiOm51bGwsImpwZWciOnsidHJlbGxpc1F1YW50aXNhdGlvbiI6dHJ1ZSwib3ZlcnNob290RGVyaW5naW5nIjp0cnVlLCJvcHRpbWlzZVNjYW5zIjp0cnVlLCJxdWFudGlzYXRpb25UYWJsZSI6M319fQ==" alt="Sprague Lake" class="rounded-lg shadow-md object-cover h-48 w-full">
+                    </div>
+                </section>
+
+                <!-- Section Day 3: Rafting & Trail Ridge -->
+                <section id="day3" class="content-section" data-title="Day 3: Rafting & Trail Ridge">
+                    <h2 class="text-4xl font-bold mb-4">Day 3: Rafting & Trail Ridge Road</h2>
+                    <p class="text-lg mb-6">Get ready for an action-packed day of incredible adventures! We'll start by tackling the thrilling rapids on a wild rafting trip down the river. Then, we'll trade the canyon for the sky, driving up the spectacular Trail Ridge Road high above the clouds, stopping for unbelievable views, and finishing with a beautiful waterfall hike!</p>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow mb-8">
+                        <h3 class="text-xl font-semibold mb-2">Day 3 Route</h3>
+                        <img src="https://i.ibb.co/P9tB1B4/day3-map.png" alt="Map of Day 3 route including rafting and Trail Ridge Road" class="rounded-md w-full object-cover mb-4">
+                        <a id="day3-map-link" href="#" target="_blank" class="inline-block w-full text-center bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-300">
+                            <i class="fas fa-map-location-dot mr-2"></i>View Interactive Map
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-2xl font-semibold mb-4 border-b pb-2">Timeline for Wednesday, August 6th</h3>
+                            <div class="relative">
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">5:30 AM - 6:10 AM</p>
+                                    <p>Wake up, have coffee, and prepare to leave.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">6:10 AM - 6:30 AM</p>
+                                    <p class="flex items-center space-x-2">
+                                        <span>Drive to Estes Park High School.</span>
+                                        <a href="https://waze.com/ul?q=Estes%20Park%20High%20School&navigate=yes" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a>
+                                    </p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">6:30 AM - 6:45 AM</p>
+                                    <p>Meet at the Estes Park High School parking lot.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">6:45 AM - 8:05 AM</p>
+                                    <p class="flex items-center space-x-2">
+                                        <span>Drive to the rafting launch point on the Cache la Poudre River.</span>
+                                         <a href="https://waze.com/ul?ll=40.68918,-105.59253" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a>
+                                    </p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">8:05 AM - 11:25 AM</p>
+                                    <p><a href="https://www.wanderingweddings.com/whitewater-rafting-elopement/" target="_blank" class="text-blue-600 hover:underline">Rafting adventure!</a> (3 hours)</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">11:25 AM - 1:00 PM</p>
+                                    <p>Lunch and drive to Trail Ridge Road.</p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">1:00 PM - 5:00 PM</p>
+                                    <p>Drive and explore <a href="https://www.nps.gov/romo/planyourvisit/trail_ridge_road.htm" target="_blank" class="text-blue-600 hover:underline">Trail Ridge Road</a>, stopping at viewpoints.</p>
+                                    <ul class="mt-2 ml-4 text-sm text-gray-600 list-disc list-inside">
+                                        <li class="flex items-center space-x-2"><span>Forest Canyon Overlook</span> <a href="https://waze.com/ul?ll=40.40243,-105.74818" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a></li>
+                                        <li class="flex items-center space-x-2"><span>Lava Cliffs Overlook</span> <a href="https://waze.com/ul?ll=40.43051,-105.79549" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a></li>
+                                        <li class="flex items-center space-x-2"><span>Gore Range Overlook</span> <a href="https://waze.com/ul?ll=40.43729,-105.81182" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a></li>
+                                        <li class="flex items-center space-x-2"><span>Alpine Visitor Center</span> <a href="https://waze.com/ul?ll=40.43972,-105.79861" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a></li>
+                                    </ul>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">5:00 PM - 6:30 PM</p>
+                                    <p class="flex items-center space-x-2">
+                                        <span>Hike to <a href="https://www.alltrails.com/trail/us/colorado/adams-falls-trail" target="_blank" class="text-blue-600 hover:underline">Adams Falls</a>.</span>
+                                        <a href="https://waze.com/ul?q=Adams%20Falls&navigate=yes" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold hover:bg-blue-200">Waze</a>
+                                    </p>
+                                </div>
+                                <div class="timeline-item relative pl-10 pb-10">
+                                    <div class="timeline-dot"></div>
+                                    <p class="font-bold text-emerald-600">6:30 PM - 9:45 PM</p>
+                                    <p>Drive to the campground, dinner, and campfire.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 p-6 rounded-lg shadow">
+                             <h3 class="text-2xl font-semibold mb-4">Key Notes for the Day</h3>
+                            <ul class="space-y-3 list-disc list-inside">
+                                <li>Again, the key is to wake up early.</li>
+                                <li>Nava, Yaer, Tamar, Uriel, and another adult will stay in Estes for a fun day in the charming town.</li>
+                                <li>Please wear your swimwear for the rafting trip, and bring a bag with a change of clothes and a towel for afterward.</li>
+                                <li>Please have a full breakfast before we get on the water. You can bring snacks and should also bring plenty of water with you on the raft.</li>
+                                <li>For footwear, you’ll want to wear water shoes or sandals with a heel strap that will stay on your feet. Flip-flops are not recommended as they fall off very easily. All rafters must wear shoes. A hat and sunscreen are always a good idea.</li>
+                                <li>You can take pictures with your phone, but it's highly recommended to bring waterproof phone cases.</li>
+                                <li>The schedule for the Trail Ridge Road drive might change depending on the weather. The morning rafting trip should not be affected.</li>
+                                <li>It's also possible that we won't find parking at every overlook, so we may have to skip some of them.</li>
+                            </ul>
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                        <img src="https://www.uncovercolorado.com/wp-content/uploads/2019/06/Cache-la-Poudre-River-Rafting-near-Fort-Collins-CO-1-1200x900.jpg" alt="Rafting on Cache la Poudre River" class="rounded-lg shadow-md object-cover h-48 w-full">
+                        <img src="https://www.nps.gov/romo/planyourvisit/images/ROMO_TRRd_DSC_3993_960.jpg" alt="View from Trail Ridge Road" class="rounded-lg shadow-md object-cover h-48 w-full">
+                        <img src="https://images.alltrails.com/eyJidWNrZXQiOiJhc3NldHMuYWxsdHJhaWxzLmNvbSIsImtleSI6InVwbG9hZHMvcGhvdG8vaW1hZ2UvMTA1NjM5NjYwL2I0ZGFmYzNhYzBlMzVhZDg5NDZkYjA4NDY4YTIyZDI0LmpwZyIsImVkaXRzIjp7InRvRm9ybWF0Ijoid2VicCIsInJlc2l6ZSI6eyJ3aWR0aCI6MjA0OCwiaGVpZ2h0IjoyMDQ4LCJmaXQiOiJpbnNpZGUifSwicm90YXRlIjpudWxsLCJqcGVnIjp7InRyZWxsaXNRdWFudGlzYXRpb24iOnRydWUsIm92ZXJzaG9vdERlcmluZ2luZyI6dHJ1ZSwib3B0aW1pc2VTY2FucyI6dHJ1ZSwicXVhbnRpc2F0aW9uVGFibGUiOjN9fX0=" alt="Adams Falls" class="rounded-lg shadow-md object-cover h-48 w-full">
+                    </div>
+                </section>
+
+                <!-- Section RV Pickup Guide -->
+                <section id="rv-guide" class="content-section" data-title="RV Pickup Guide">
+                    <h2 class="text-4xl font-bold mb-4">Getting the RV – Important Points!</h2>
+                    <p class="text-lg mb-6">A smooth start is key! Let's work as a team to get our RVs quickly and without issues. Click each step to see the details.</p>
+                    
+                    <!-- Video Player -->
+                    <div class="bg-white p-4 rounded-lg shadow mb-6">
+                        <h3 class="text-2xl font-semibold mb-2 text-red-600">Instructional Video (Mandatory Viewing!)</h3>
+                        <div class="aspect-w-16 aspect-h-9 mt-4">
+                            <iframe title="vimeo-player" src="https://player.vimeo.com/video/1097931276?h=2c0b065ad2" class="w-full h-full rounded-lg" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    </div>
+
+                    <!-- Audio Guide Link -->
+                    <div class="bg-white p-4 rounded-lg shadow mb-6">
+                        <h3 class="text-xl font-semibold mb-2">Audio Guide</h3>
+                        <p class="text-gray-600 mb-4">Click the button below to listen to the audio guide for picking up the RV. This will open in a new tab.</p>
+                        <a href="https://voca.ro/1g7sGktYv9Nz" target="_blank" class="inline-block w-full text-center bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors duration-300">
+                            <i class="fas fa-play-circle mr-2"></i>Listen to Audio Guide
+                        </a>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-lg shadow">
+                            <button onclick="toggleReveal('reveal-1')" class="w-full text-left font-semibold p-4 hover:bg-gray-50 focus:outline-none flex justify-between items-center">
+                                <span>Documents & Credit Card</span>
+                                <span class="text-emerald-500 transform transition-transform duration-300">&#9662;</span>
+                            </button>
+                            <div id="reveal-1" class="reveal-content px-4 pb-4">
+                                <ul class="list-disc list-inside text-gray-700 space-y-2 pt-2">
+                                    <li>Each family is responsible for their own documents (driver's license, passport).</li>
+                                    <li>Every main driver must have a regular (non-debit) credit card in their name.</li>
+                                    <li>The card must have a $1,500 available limit for the security deposit.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow">
+                            <button onclick="toggleReveal('reveal-2')" class="w-full text-left font-semibold p-4 hover:bg-gray-50 focus:outline-none flex justify-between items-center">
+                                <span>"Divide and Conquer" Strategy</span>
+                                <span class="text-emerald-500 transform transition-transform duration-300">&#9662;</span>
+                            </button>
+                            <div id="reveal-2" class="reveal-content px-4 pb-4">
+                                 <ul class="list-disc list-inside text-gray-700 space-y-2 pt-2">
+                                    <li>Split the adults: a team for paperwork and a team to supervise the kids.</li>
+                                    <li>While family reps are with the agent, the older girls are in charge of keeping the younger kids busy.</li>
+                                     <li>Be proactive: Each family should be ready to approach the first available representative.</li>
+                                </ul>
+                            </div>
+                        </div>
+                         <div class="bg-white rounded-lg shadow">
+                            <button onclick="toggleReveal('reveal-3')" class="w-full text-left font-semibold p-4 hover:bg-gray-50 focus:outline-none flex justify-between items-center">
+                                <span>Efficient Orientation & Inspection</span>
+                                <span class="text-emerald-500 transform transition-transform duration-300">&#9662;</span>
+                            </button>
+                            <div id="reveal-3" class="reveal-content px-4 pb-4">
+                                 <ul class="list-disc list-inside text-gray-700 space-y-2 pt-2">
+                                     <li>Be focused during the RV orientation. We know the routine, let's keep it brief.</li>
+                                     <li>Keep children out of the RVs during orientation to avoid distractions.</li>
+                                     <li><span class="font-semibold">Inspection Team:</span> David, Nethanel, Aliza, and Zecharia will inspect all RVs for pre-existing damage.</li>
+                                     <li>Ensure any findings are documented on the paperwork by El Monte staff before leaving.</li>
+                                </ul>
+                            </div>
+                        </div>
+                         <div class="bg-white rounded-lg shadow">
+                            <button onclick="toggleReveal('reveal-4')" class="w-full text-left font-semibold p-4 hover:bg-gray-50 focus:outline-none flex justify-between items-center">
+                                <span>Team Loading</span>
+                                <span class="text-emerald-500 transform transition-transform duration-300">&#9662;</span>
+                            </button>
+                            <div id="reveal-4" class="reveal-content px-4 pb-4">
+                                <p class="pt-2 text-gray-700">Each family loads their RV as quickly as possible, then immediately moves to help any other family that hasn't finished. Many hands make light work!</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 4: Packing & Shopping Lists -->
+                <section id="lists" class="content-section" data-title="Packing & Shopping Lists">
+                    <h2 class="text-4xl font-bold mb-4">Gear & Grocery Lists</h2>
+                    <p class="text-lg mb-6">Use these lists to track what to bring and what to buy. Add your own items to the personal lists.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Left Column for Personal Lists -->
+                        <div class="space-y-8">
+                            <!-- Personal Gear List Card -->
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-2xl font-semibold mb-4">Personal Gear List</h3>
+                                <ul id="personal-gear-list" class="space-y-2 text-gray-700 mb-4">
+                                    <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3"><span>Bedding (pillows, blankets)</span></li>
+                                    <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3"><span>Towels</span></li>
+                                    <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3"><span>Toiletries (shampoo, soap, etc.)</span></li>
+                                    <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3"><span>Insect repellent & Sunscreen</span></li>
+                                    <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3"><span>Flashlights & First-aid kit</span></li>
+                                    <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3"><span>Games and books</span></li>
+                                    <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3"><span>Camping gear (chairs, table, mat)</span></li>
+                                </ul>
+                                <div class="flex">
+                                    <input type="text" id="new-gear-item" class="w-full rounded-l-lg p-2 border-t mr-0 border-b border-l text-gray-800 border-gray-200 bg-white" placeholder="Add new gear item"/>
+                                    <button onclick="addItemToList('personal-gear-list', 'new-gear-item')" class="px-4 rounded-r-lg bg-emerald-500 text-white font-bold p-2 uppercase border-emerald-500 border-t border-b border-r hover:bg-emerald-600">Add</button>
+                                </div>
+                            </div>
+                            <!-- Personal Food List Card -->
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-2xl font-semibold mb-4">Your Personal Food List</h3>
+                                <p class="text-sm text-gray-600 mb-4">Add food items you're bringing. The AI Meal Planner will use this list!</p>
+                                <ul id="personal-food-list" class="space-y-2 text-gray-700 mb-4">
+                                    <!-- Items will be added here by JavaScript -->
+                                </ul>
+                                <div class="flex">
+                                    <input type="text" id="new-food-item" class="w-full rounded-l-lg p-2 border-t mr-0 border-b border-l text-gray-800 border-gray-200 bg-white" placeholder="e.g., 'Kosher hot dogs'"/>
+                                    <button onclick="addItemToList('personal-food-list', 'new-food-item')" class="px-4 rounded-r-lg bg-emerald-500 text-white font-bold p-2 uppercase border-emerald-500 border-t border-b border-r hover:bg-emerald-600">Add</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Right Column for Communal List -->
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-2xl font-semibold mb-4">Communal Shopping List</h3>
+                            <ul id="communal-list" class="space-y-2 text-gray-700">
+                                <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3">Food for everyday dinner</li>
+                                <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3">Food for Shabbat dinner and lunch</li>
+                                <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3">Grill and charcoal (<span class="font-semibold">Netanel is in charge</span>)</li>
+                                <li class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3">Gas grill (??)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section 5: AI Trip Assistant -->
+                <section id="ai-assistant" class="content-section" data-title="✨ AI Trip Assistant">
+                    <h2 class="text-4xl font-bold mb-4">✨ AI Trip Assistant</h2>
+                    <p class="text-lg mb-6">Let Gemini help you with the planning! Use these AI-powered tools to get ideas for meals and activities.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- AI Meal Planner Card -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg">
+                            <h3 class="text-2xl font-semibold mb-2">AI Meal Planner</h3>
+                            <p class="text-gray-600 mb-4">Generate a dinner plan based on the communal and your personal food lists.</p>
+                            <button onclick="generateMealPlan()" class="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors duration-300">
+                                ✨ Generate Meal Plan
+                            </button>
+                        </div>
+                        <!-- AI Activity Suggester Card -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg">
+                            <h3 class="text-2xl font-semibold mb-2">AI Activity Suggester</h3>
+                            <p class="text-gray-600 mb-4">Get family-friendly activity ideas for your destinations.</p>
+                            <button onclick="suggestActivities('Rocky Mountain National Park')" class="w-full bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors duration-300">
+                                ✨ Suggest RMNP Activities
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for AI responses -->
+    <div id="ai-modal" class="modal-backdrop">
+        <div class="bg-white rounded-lg shadow-xl m-4 max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 id="modal-title" class="text-xl font-bold">AI Assistant is thinking...</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div id="modal-content" class="p-6 overflow-y-auto">
+                <!-- Spinner will be shown here -->
+                <div class="flex justify-center items-center h-48">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            <div class="p-4 border-t text-right">
+                 <button onclick="closeModal()" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- SCRIPT FOR NAVIGATION AND INTERACTIVITY ---
+
+        const navContainer = document.getElementById('presentation-nav');
+        const contentContainer = document.getElementById('presentation-content');
+        const sections = contentContainer.querySelectorAll('.content-section');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        let activeLink = null;
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        }
+
+        function showSection(id) {
+            sections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === id) {
+                    section.classList.add('active');
+                }
+            });
+
+            const newActiveLink = document.querySelector(`[data-target="${id}"]`);
+            if (activeLink) {
+                activeLink.classList.remove('active');
+            }
+            if (newActiveLink) {
+                newActiveLink.classList.add('active');
+                activeLink = newActiveLink;
+            }
+            // Close sidebar on mobile after clicking a link
+            if (window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+        }
+
+        sections.forEach((section, index) => {
+            const title = section.getAttribute('data-title');
+            const id = section.id;
+            const link = document.createElement('a');
+            link.href = '#';
+            link.textContent = title;
+            link.className = 'sidebar-link block p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200';
+            link.setAttribute('data-target', id);
+            
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection(id);
+            });
+
+            navContainer.appendChild(link);
+
+            if (index === 0) {
+                link.classList.add('active');
+                section.classList.add('active');
+                activeLink = link;
+            }
+        });
+
+        function toggleReveal(id) {
+            const content = document.getElementById(id);
+            const button = content.previousElementSibling;
+            const arrow = button.querySelector('span:last-child');
+
+            content.classList.toggle('open');
+            if (content.classList.contains('open')) {
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // --- DYNAMIC LIST FUNCTIONALITY ---
+        function addItemToList(listId, inputId) {
+            const list = document.getElementById(listId);
+            const input = document.getElementById(inputId);
+            const itemName = input.value.trim();
+
+            if (itemName) {
+                const li = document.createElement('li');
+                li.className = 'flex items-center';
+                li.innerHTML = `<input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mr-3"><span>${itemName}</span>`;
+                list.appendChild(li);
+                input.value = '';
+            }
+        }
+
+        // --- MAP GENERATION ---
+        function generateDay1Map() {
+            const locations = {
+                origin: 'Denver International Airport',
+                rvPickup: 'El Monte RV, Commerce City, CO',
+                reservoir: 'Boulder Reservoir, Boulder, CO',
+                destination: 'Manor RV Park, Estes Park, CO'
+            };
+            const waypoints = `${locations.rvPickup}|${locations.reservoir}`;
+            const directionsUrl = new URL('https://www.google.com/maps/dir/?api=1');
+            directionsUrl.searchParams.append('origin', locations.origin);
+            directionsUrl.searchParams.append('destination', locations.destination);
+            directionsUrl.searchParams.append('waypoints', waypoints);
+            directionsUrl.searchParams.append('travelmode', 'driving');
+            document.getElementById('day1-map-link').href = directionsUrl.toString();
+        }
+
+        function generateDay2Map() {
+            const locations = {
+                origin: 'Manor RV Park, Estes Park, CO',
+                destination: 'Bear Lake Trailhead, Estes Park, CO',
+                waypoints: 'RMNP Park & Ride|Emerald Lake Trailhead|Alberta Falls|Sprague Lake'
+            };
+            const directionsUrl = new URL('https://www.google.com/maps/dir/?api=1');
+            directionsUrl.searchParams.append('origin', locations.origin);
+            directionsUrl.searchParams.append('destination', locations.destination);
+            directionsUrl.searchParams.append('waypoints', locations.waypoints);
+            directionsUrl.searchParams.append('travelmode', 'driving');
+            document.getElementById('day2-map-link').href = directionsUrl.toString();
+        }
+
+        function generateDay3Map() {
+            const locations = {
+                origin: 'Manor RV Park, Estes Park, CO',
+                destination: 'Adams Falls Trailhead, Grand Lake, CO',
+                waypoints: 'Estes Park High School|40.68918,-105.59253|Forest Canyon Overlook|Lava Cliffs Overlook|Gore Range Overlook|Alpine Visitor Center'
+            };
+            const directionsUrl = new URL('https://www.google.com/maps/dir/?api=1');
+            directionsUrl.searchParams.append('origin', locations.origin);
+            directionsUrl.searchParams.append('destination', locations.destination);
+            directionsUrl.searchParams.append('waypoints', locations.waypoints);
+            directionsUrl.searchParams.append('travelmode', 'driving');
+            document.getElementById('day3-map-link').href = directionsUrl.toString();
+        }
+
+        // --- GEMINI API INTEGRATION ---
+        const modal = document.getElementById('ai-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+
+        function showModal(title) {
+            modalTitle.textContent = title;
+            modalContent.innerHTML = `<div class="flex justify-center items-center h-48"><div class="spinner"></div></div>`;
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            modal.classList.remove('flex');
+        }
+
+        function displayResult(title, content) {
+            modalTitle.textContent = title;
+            const formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                                          .replace(/\n/g, '<br>');
+            modalContent.innerHTML = `<div class="prose max-w-none">${formattedContent}</div>`;
+        }
+
+        async function callGemini(prompt) {
+            const apiKey = ""; // API key is handled by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }]
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) { throw new Error(`API call failed: ${response.status}`); }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    return "Sorry, the AI couldn't generate a response. The response was empty.";
+                }
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                return `Sorry, something went wrong. Could not get a response. Please check the console for details.`;
+            }
+        }
+
+        async function generateMealPlan() {
+            showModal("Generating Meal Plan...");
+            const communalListItems = Array.from(document.querySelectorAll('#communal-list li')).map(li => li.innerText.trim());
+            const personalFoodListItems = Array.from(document.querySelectorAll('#personal-food-list li span')).map(span => span.innerText.trim());
+            
+            const combinedFoodList = [...communalListItems, ...personalFoodListItems];
+
+            if (personalFoodListItems.length === 0) {
+                 displayResult("Meal Plan Error", "Your personal food list is empty. Please add some food items you are bringing so the AI can create a custom meal plan.");
+                 return;
+            }
+
+            const shoppingList = combinedFoodList.join(', ');
+
+            const prompt = `You are a creative chef specializing in easy campfire and RV cooking for large families. Based on the following combined communal and personal shopping list, create a 5-day dinner meal plan. For each day, provide a fun meal name, a list of ingredients needed from the list, and simple cooking instructions suitable for a grill or basic RV kitchen. The available food items are: ${shoppingList}. Also suggest a special meal for a Shabbat dinner.`;
+            
+            const result = await callGemini(prompt);
+            displayResult("Your AI-Generated Meal Plan", result);
+        }
+
+        async function suggestActivities(location) {
+            showModal(`Suggesting activities for ${location}...`);
+            const prompt = `You are an expert tour guide for US National Parks. A large family with children is visiting ${location} in their RV. Suggest 3-5 fun, family-friendly activities. For each activity, provide a brief description, the estimated time commitment, and a tip for visiting with children.`;
+
+            const result = await callGemini(prompt);
+            displayResult(`Activity Ideas for ${location}`, result);
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            generateDay1Map();
+            generateDay2Map();
+            generateDay3Map();
+        };
+
+    </script>
+</body>
+</html>
